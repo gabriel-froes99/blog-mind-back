@@ -3,26 +3,52 @@ import cors from "cors";
 import bcrypt from 'bcrypt';
 import pool from './database';
 
+interface User {
+  id: number;
+  email: string;
+  password_hash: string;
+}
+
 const app = express();
 
 app.use(cors({ origin: 'http://localhost:5173' }));
 
 app.use(express.json()); // Para parsear o corpo da requisição como JSON
 
-// app.post('/login', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-//   try {
-//     const { email, password } = req.body;
-//     console.log('Dados recebidos em /login:', { email }); // Evite logar senhas em produção
-//     // TODO: Adicionar lógica de autenticação com o banco de dados aqui
-//     // Exemplo: const user = await authService.login(email, password);
+app.post('/login', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  try {
+    const { email, password } = req.body;
+    console.log('Dados recebidos em /login:', { email }); // Evite logar senhas em produção
+    // TODO: Adicionar lógica de autenticação com o banco de dados aqui
+    // Exemplo: const user = await authService.login(email, password);
 
-//     // Simulação de sucesso por enquanto
-//   } catch (error) {
-//     // Passa qualquer erro ocorrido para o middleware de tratamento de erros global
-//     next(error);
-//   }
-// });
- app.post('/login', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    const [rows] = await pool.execute('SELECT id, email, password_hash FROM users WHERE email = ?', [email]);
+
+    // Verifica se encontrou algum usuário
+    const users = rows as any[]; // Assumindo que 'rows' é um array de objetos
+    if (users.length === 0) {
+      // Usuário não encontrado
+      return res.status(401).json({ message: 'Email ou senha inválidos.' });
+    }
+
+      const user = users[0] as User;
+
+      const passwordMatch = await bcrypt.compare(password, user.password_hash);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Email ou senha inválidos.' });
+    }
+
+ res.status(200).json({ message: 'Login bem-sucedido!', userId: user.id, email: user.email });
+
+  } catch (error: any) {
+     // Passa qualquer erro ocorrido para o middleware de tratamento de erros global
+     next(error);
+   }
+
+});
+
+ app.post('/cadastro', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
  try {
      const { email, password } = req.body;
     // Criptografa a senha
