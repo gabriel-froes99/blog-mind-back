@@ -1,5 +1,3 @@
-# blog-mind-back
-backend do projeto do blog mind
 # Blog Mind - Backend
 
 Este é o backend para a aplicação Blog Mind, uma plataforma para criar e gerenciar artigos de blog.
