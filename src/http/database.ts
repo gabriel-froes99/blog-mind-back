@@ -1,9 +1,7 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
-// Garante que dotenv.config() seja chamado para carregar as variáveis de ambiente
-// Se já estiver sendo chamado no server.ts, esta chamada aqui pode ser redundante,
-// mas não prejudica e garante que as variáveis estejam disponíveis.
+
 dotenv.config();
 
 const dbConfig = {
@@ -13,7 +11,7 @@ const dbConfig = {
   database: process.env.DB_DATABASE || 'blogdb',
   port: Number(process.env.DB_PORT) || 3306,
   waitForConnections: true,
-  connectionLimit: 10, // Ajuste conforme necessário
+  connectionLimit: 10, 
   queueLimit: 0,
 };
 
@@ -23,7 +21,7 @@ console.log('Tentando conectar ao MySQL com as configurações:', { host: dbConf
 pool.getConnection()
   .then(connection => {
     console.log('Conectado ao MySQL com sucesso!');
-    connection.release(); // Libera a conexão de volta para o pool
+    connection.release(); 
   })
   .catch(err => console.error('Falha ao conectar ao MySQL:', err.message));
 

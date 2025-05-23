@@ -41,10 +41,10 @@ app.post('/login', async (req: Request, res: Response, next: NextFunction): Prom
         const { email, password } = req.body;
         console.log('Dados recebidos em /login:', { email });
 
-        // Busca o usuário pelo email
+        
         const [rows] = await pool.execute<RowDataPacket[]>('SELECT id, email, password_hash FROM users WHERE email = ?', [email]);
 
-        const users = rows as User[]; // Faz cast para sua interface User[]
+        const users = rows as User[]; 
         if (users.length === 0) {
             return res.status(401).json({ message: 'Email ou senha inválidos.' });
         }
@@ -56,12 +56,12 @@ app.post('/login', async (req: Request, res: Response, next: NextFunction): Prom
             return res.status(401).json({ message: 'Email ou senha inválidos.' });
         }
 
-        // Retorna o userId e email após login bem-sucedido
+        
         res.status(200).json({ message: 'Login bem-sucedido!', userId: user.id, email: user.email });
 
     } catch (error: any) {
         console.error('Erro no login:', error);
-        next(error); // Passa o erro para o middleware de tratamento de erros
+        next(error); 
     }
 });
 
@@ -70,7 +70,7 @@ app.post('/cadastro', async (req: Request, res: Response, next: NextFunction): P
         const { email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insere o novo usuário no banco de dados
+        
         const [result] = await pool.execute<ResultSetHeader>(
             'INSERT INTO users (email, password_hash) VALUES (?, ?)',
             [email, hashedPassword]
@@ -79,7 +79,7 @@ app.post('/cadastro', async (req: Request, res: Response, next: NextFunction): P
         res.status(201).json({ message: 'Usuário cadastrado com sucesso!' });
     } catch (error: any) {
         console.error('Erro ao cadastrar usuário:', error);
-        // Verifica se o erro é de entrada duplicada (email já em uso)
+        
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ message: 'Email já está em uso.' });
         }
@@ -94,7 +94,7 @@ app.post('/cadastro', async (req: Request, res: Response, next: NextFunction): P
 // Rota para CRIAR NOVO ARTIGO com user_id
 app.post('/articles', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {
-        // userId deve ser enviado no body junto com os dados do artigo
+        
         const { title, description, imageBlob, imageMimeType, author, content, userId } = req.body;
 
         // Validação de campos obrigatórios
@@ -102,18 +102,16 @@ app.post('/articles', async (req: Request, res: Response, next: NextFunction): P
             return res.status(400).json({ message: 'Título, descrição, autor, conteúdo e ID do usuário são obrigatórios.' });
         }
 
-        let imageData = null; // Buffer para o BLOB
+        let imageData = null; 
         if (imageBlob && imageMimeType) {
-            // Remove o prefixo de dados (ex: "data:image/jpeg;base64,") para obter apenas os dados base64
+            
             const base64Data = imageBlob.split(',')[1];
             if (base64Data) {
                 imageData = Buffer.from(base64Data, 'base64');
             }
         }
 
-        // Insere o novo artigo no banco de dados, incluindo user_id e content
-        // As colunas precisam corresponder ao seu esquema real do MySQL.
-        // Assumindo: id, title, description, image_blob, image_mime_type, date, author, user_id, content
+        
         const [result] = await pool.execute<ResultSetHeader>(
             'INSERT INTO articles (title, description, image_blob, image_mime_type, date, author, user_id, content) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)',
             [title, description, imageData, imageMimeType, author, userId, content]
@@ -146,14 +144,14 @@ app.get('/articles/user/:userId', async (req: Request, res: Response) => {
         
         const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM articles WHERE user_id = ? ORDER BY date DESC', [userId]);
 
-        // Mapeia os resultados do banco de dados para a interface ArticleDB,
-        // convertendo o BLOB da imagem para base64 para envio ao frontend.
+        
+        
         const articles = rows.map(row => {
-            const article = row as ArticleDB; // Faz cast para ArticleDB
+            const article = row as ArticleDB; 
             return {
                 ...article,
                 image_blob: article.image_blob ? Buffer.from(article.image_blob).toString('base64') : undefined,
-                date: new Date(article.date) // Converte a data para objeto Date
+                date: new Date(article.date) 
             };
         });
 
@@ -165,7 +163,7 @@ app.get('/articles/user/:userId', async (req: Request, res: Response) => {
 });
 
 
-// 2. Rota para OBTER UM ÚNICO ARTIGO POR ID (MAIS GENÉRICA, DEPOIS DA ESPECÍFICA)
+
 app.get('/articles/:id', async (req: Request, res: Response) => {
     const articleId = parseInt(req.params.id);
 
@@ -175,7 +173,7 @@ app.get('/articles/:id', async (req: Request, res: Response) => {
     }
 
     try {
-        // Busca um único artigo pelo seu ID
+        
         const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM articles WHERE id = ?', [articleId]);
 
         if (rows.length === 0) {
@@ -183,12 +181,12 @@ app.get('/articles/:id', async (req: Request, res: Response) => {
              return;
         }
 
-        const article = rows[0] as ArticleDB; // Faz cast para ArticleDB
-        // Converte o BLOB da imagem para base64 antes de enviar
+        const article = rows[0] as ArticleDB; 
+        
         const articleWithBase64 = {
             ...article,
             image_blob: article.image_blob ? Buffer.from(article.image_blob).toString('base64') : undefined,
-            date: new Date(article.date) // Converte a data para objeto Date
+            date: new Date(article.date) 
         };
 
         res.status(200).json(articleWithBase64);
@@ -199,19 +197,19 @@ app.get('/articles/:id', async (req: Request, res: Response) => {
 });
 
 
-// 3. Rota para OBTER TODOS OS ARTIGOS
+
 app.get('/articles', async (req: Request, res: Response) => {
     try {
-        // Busca todos os artigos
+        
         const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM articles ORDER BY date DESC');
 
-        // Mapeia os resultados convertendo o BLOB da imagem para base64
+        
         const articlesWithBase64 = rows.map(row => {
-            const article = row as ArticleDB; // Faz cast para ArticleDB
+            const article = row as ArticleDB; 
             return {
                 ...article,
                 image_blob: article.image_blob ? Buffer.from(article.image_blob).toString('base64') : undefined,
-                date: new Date(article.date) // Converte a data para objeto Date
+                date: new Date(article.date) 
             };
         });
 
@@ -222,38 +220,38 @@ app.get('/articles', async (req: Request, res: Response) => {
     }
 });
 
-// Rota para EXCLUIR ARTIGO
+
 app.delete('/articles/:id', async (req: Request, res: Response) => {
     const articleId = parseInt(req.params.id);
-    const userId = req.headers['x-user-id']; // Espera o user ID no cabeçalho X-User-Id
+    const userId = req.headers['x-user-id']; 
 
     if (isNaN(articleId)) {
          res.status(400).json({ message: 'ID do artigo inválido.' });
          return;
     }
-    if (!userId) { // Validação se o user ID foi fornecido
+    if (!userId) { 
          res.status(401).json({ message: 'Autorização necessária para exclusão.' });
          return;
     }
 
     try {
-        // Primeiro, verifica se o artigo existe e se pertence ao usuário
+        
         const [checkRows] = await pool.execute<RowDataPacket[]>('SELECT user_id FROM articles WHERE id = ?', [articleId]);
         if (checkRows.length === 0) {
              res.status(404).json({ message: 'Artigo não encontrado.' });
              return;
         }
-        const article = checkRows[0] as ArticleDB; // Faz cast para ArticleDB
-        // Compara o user_id do artigo com o userId fornecido no cabeçalho
+        const article = checkRows[0] as ArticleDB; 
+        
         if (article.user_id !== parseInt(userId as string)) {
              res.status(403).json({ message: 'Você não tem permissão para excluir este artigo.' });
              return;
         }
 
-        // Se a verificação passar, procede com a exclusão
+        
         const [result] = await pool.execute<ResultSetHeader>('DELETE FROM articles WHERE id = ?', [articleId]);
 
-        // Verifica se alguma linha foi realmente afetada (artigo excluído)
+        
         if (result.affectedRows === 0) {
              res.status(404).json({ message: 'Artigo não encontrado para exclusão.' });
              return;
@@ -265,17 +263,17 @@ app.delete('/articles/:id', async (req: Request, res: Response) => {
     }
 });
 
-// Rota para ATUALIZAR ARTIGO
+
 app.put('/articles/:id', async (req: Request, res: Response) => {
     const articleId = parseInt(req.params.id);
-    // userId é esperado no body para verificação de permissão
+    
     const { title, description, author, content, imageBlob, imageMimeType, userId } = req.body;
 
     if (isNaN(articleId)) {
          res.status(400).json({ message: 'ID do artigo inválido.' });
          return;
     }
-    if (!userId) { // Validação se o user ID foi fornecido
+    if (!userId) { 
          res.status(401).json({ message: 'Autorização necessária para atualização.' });
          return;
     }
@@ -285,20 +283,20 @@ app.put('/articles/:id', async (req: Request, res: Response) => {
     }
 
     try {
-        // Primeiro, verifica se o artigo existe e se pertence ao usuário
+        
         const [checkRows] = await pool.execute<RowDataPacket[]>('SELECT user_id FROM articles WHERE id = ?', [articleId]);
         if (checkRows.length === 0) {
              res.status(404).json({ message: 'Artigo não encontrado.' });
              return;
         }
-        const article = checkRows[0] as ArticleDB; // Faz cast para ArticleDB
-        // Compara o user_id do artigo com o userId fornecido no body
+        const article = checkRows[0] as ArticleDB; 
+        
         if (article.user_id !== parseInt(userId as string)) {
              res.status(403).json({ message: 'Você não tem permissão para atualizar este artigo.' });
              return;
         }
 
-        let imageData = null; // Buffer para o BLOB da imagem
+        let imageData = null; 
         if (imageBlob && imageMimeType) {
             const base64Data = imageBlob.split(',')[1];
             if (base64Data) {
@@ -306,13 +304,13 @@ app.put('/articles/:id', async (req: Request, res: Response) => {
             }
         }
 
-        // Procede com a atualização do artigo
+        
         const [result] = await pool.execute<ResultSetHeader>(
             'UPDATE articles SET title = ?, description = ?, author = ?, content = ?, image_blob = ?, image_mime_type = ?, date = NOW() WHERE id = ?',
             [title, description, author, content, imageData, imageMimeType, articleId]
         );
 
-        // Verifica se alguma linha foi realmente afetada (artigo atualizado)
+        
         if (result.affectedRows === 0) {
              res.status(404).json({ message: 'Artigo não encontrado para atualização.' });
              return;
@@ -329,10 +327,10 @@ app.put('/articles/:id', async (req: Request, res: Response) => {
 // TRATAMENTO DE ERROS E INÍCIO DO SERVIDOR
 // =======================================================================================
 
-// Middleware de tratamento de erros genérico
+
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack); // Loga o stack trace do erro no console do servidor
-    res.status(500).send('Algo deu errado no servidor! Erro: ' + err.message); // Envia uma resposta de erro para o cliente
+    console.error(err.stack); 
+    res.status(500).send('Algo deu errado no servidor! Erro: ' + err.message); 
 });
 
 const PORT = process.env.PORT || 3000;
