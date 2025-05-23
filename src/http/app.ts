@@ -1,34 +1,35 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from "cors";
 import bcrypt from 'bcrypt';
-import pool from './database'; // Certifique-se que este pool é para MySQL com mysql2
-import { RowDataPacket, ResultSetHeader } from 'mysql2'; // Importe estes tipos
+import pool from './database';
+import { RowDataPacket, ResultSetHeader } from 'mysql2'; 
 
-// Interface para um usuário (do banco de dados)
+
+
 interface User extends RowDataPacket {
     id: number;
     email: string;
     password_hash: string;
 }
 
-// Interface para um artigo (do banco de dados)
+
 interface ArticleDB extends RowDataPacket {
     id: number;
     title: string;
     description: string;
-    image_blob?: Buffer; // Buffer para BLOB em MySQL
+    image_blob?: Buffer; 
     image_mime_type?: string;
-    date: Date; // Ou string, dependendo de como você prefere manipular datas no frontend
+    date: Date; 
     author: string;
-    user_id: number; // O ID do usuário que criou o artigo
-    content?: string; // Adicionado aqui
+    user_id: number; 
+    content?: string; 
 }
 
 const app = express();
 
-// Configuração do CORS: Permite requisições do frontend (http://localhost:5173)
+
 app.use(cors({ origin: 'http://localhost:5173' }));
-// Habilita o parsing de JSON no corpo da requisição, com limite aumentado para imagens base64
+
 app.use(express.json({ limit: '50mb' }));
 
 // =======================================================================================
@@ -48,7 +49,7 @@ app.post('/login', async (req: Request, res: Response, next: NextFunction): Prom
             return res.status(401).json({ message: 'Email ou senha inválidos.' });
         }
 
-        const user = users[0]; // Agora 'user' é do tipo User
+        const user = users[0]; 
         const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
         if (!passwordMatch) {
@@ -132,8 +133,7 @@ app.post('/articles', async (req: Request, res: Response, next: NextFunction): P
     }
 });
 
-// 1. Rota para OBTEM ARTIGOS DE UM USUÁRIO ESPECÍFICO (MAIS ESPECÍFICA)
-// ESTA ROTA DEVE VIR ANTES DE app.get('/articles/:id') para evitar conflitos de rota.
+
 app.get('/articles/user/:userId', async (req: Request, res: Response) => {
     const userId = parseInt(req.params.userId);
 
@@ -143,7 +143,7 @@ app.get('/articles/user/:userId', async (req: Request, res: Response) => {
     }
 
     try {
-        // Busca artigos associados a um user_id específico
+        
         const [rows] = await pool.execute<RowDataPacket[]>('SELECT * FROM articles WHERE user_id = ? ORDER BY date DESC', [userId]);
 
         // Mapeia os resultados do banco de dados para a interface ArticleDB,
