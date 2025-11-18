@@ -7,7 +7,7 @@
     "dev": "tsx watch src/http/server.ts"
   },
   "repository": {
-    "type": "git",
+    "type": "module",
     "url": "git+https://github.com/gabriel-froes99/blog-mind-back.git"
   },
   "keywords": [],
@@ -23,12 +23,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.15.21",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"

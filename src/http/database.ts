@@ -17,6 +17,8 @@ const dbConfig = {
 
 const pool = mysql.createPool(dbConfig);
 
+
+
 console.log('Tentando conectar ao MySQL com as configurações:', { host: dbConfig.host, user: dbConfig.user, database: dbConfig.database, port: dbConfig.port });
 pool.getConnection()
   .then(connection => {
@@ -24,5 +26,9 @@ pool.getConnection()
     connection.release(); 
   })
   .catch(err => console.error('Falha ao conectar ao MySQL:', err.message));
+
+  pool.execute('CREATE DATABASE IF NOT EXISTS blogdb')
+  .then(() => console.log(`Banco de dados '${dbConfig.database}' verificado/criado com sucesso.`))
+  .catch(err => console.error('Erro ao criar/verificar o banco de dados:', err.message));
 
 export default pool;
