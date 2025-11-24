@@ -4,7 +4,9 @@ import bcrypt from 'bcrypt';
 import pool from './database';
 import { RowDataPacket, ResultSetHeader } from 'mysql2'; 
 import path from 'path';
-import { register } from '../controllers/userController/register';
+import { registerUser } from '../controllers/userController/register';
+import { login } from '../auth/login.service';
+import { loginUser } from '../controllers/userController/login';
 
 
 
@@ -39,7 +41,9 @@ app.use(express.json({ limit: '50mb' }));
 // =======================================================================================
 app.use(express.static(path.resolve("public")));
 
-app.use('/api/auth',register)
+app.use('/api/auth', loginUser);
+
+app.use('/api/auth',registerUser)
 
 app.post('/cadastro', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
     try {

@@ -1,28 +1,11 @@
-import app from "../../http/app";
-import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcrypt';
-import { ResultSetHeader } from 'mysql2/promise';
-import pool from '../../../src/http/database';
+import { RequestHandler } from 'express';
+import { register } from '../../auth/register.service';
 
-
-export const register =  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-        const { email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        
-        const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO users (email, password_hash) VALUES (?, ?)',
-            [email, hashedPassword]
-        );
-
-        res.status(201).json({ message: 'Usuário cadastrado com sucesso!' });
-    } catch (error: any) {
-        console.error('Erro ao cadastrar usuário:', error);
-        
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'Email já está em uso.' });
-        }
-        res.status(500).json({ message: 'Erro interno do servidor.' });
-    }
+export const registerUser: RequestHandler = async (req, res, next) => {
+  try {
+    const result = await register(req, res, next);
+    return result;
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
 };
