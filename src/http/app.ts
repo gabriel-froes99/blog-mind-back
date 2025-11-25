@@ -39,7 +39,7 @@ app.use(express.json({ limit: '50mb' }));
 // =======================================================================================
 app.use('/api/auth', authRoutes);
 
-// app.use(express.static(path.resolve("public")));
+app.use(express.static(path.resolve("public")));
 
 
 
