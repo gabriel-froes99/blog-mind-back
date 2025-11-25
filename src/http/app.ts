@@ -4,9 +4,7 @@ import bcrypt from 'bcrypt';
 import pool from './database';
 import { RowDataPacket, ResultSetHeader } from 'mysql2'; 
 import path from 'path';
-import { registerUser } from '../controllers/userController/register';
-import { login } from '../auth/login.service';
-import { loginUser } from '../controllers/userController/login';
+import authRoutes from '../routes/authRoutes';
 
 
 
@@ -39,33 +37,12 @@ app.use(express.json({ limit: '50mb' }));
 // =======================================================================================
 // ROTAS DE AUTENTICAÇÃO
 // =======================================================================================
-app.use(express.static(path.resolve("public")));
+app.use('/api/auth', authRoutes);
 
-app.use('/api/auth', loginUser);
+// app.use(express.static(path.resolve("public")));
 
-app.use('/api/auth',registerUser)
 
-app.post('/cadastro', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
-        const { email, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
 
-        
-        const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO users (email, password_hash) VALUES (?, ?)',
-            [email, hashedPassword]
-        );
-
-        res.status(201).json({ message: 'Usuário cadastrado com sucesso!' });
-    } catch (error: any) {
-        console.error('Erro ao cadastrar usuário:', error);
-        
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'Email já está em uso.' });
-        }
-        res.status(500).json({ message: 'Erro interno do servidor.' });
-    }
-});
 
 // =======================================================================================
 // ROTAS DE ARTIGOS

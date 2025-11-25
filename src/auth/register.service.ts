@@ -4,24 +4,29 @@ import bcrypt from 'bcrypt';
 import { ResultSetHeader } from 'mysql2/promise';
 import pool from '../http/database';
 
-
-export const register =  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+// auth/register.service.ts
+export const register = async (email: string, password: string) => { // Tipagem corrigida
     try {
-        const { email, password, confirmPassword } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        const [result] = await pool.execute<ResultSetHeader>(
+        await pool.execute<ResultSetHeader>(
             'INSERT INTO users (email, password_hash) VALUES (?, ?)',
             [email, hashedPassword]
         );
 
-        res.status(201).json({ message: 'Usuário cadastrado com sucesso!' });
+        // Apenas retorna uma mensagem de sucesso, não lança erro
+        return { message: 'Usuário cadastrado com sucesso!' }; 
+
     } catch (error: any) {
-        console.error('Erro ao cadastrar usuário:', error);
-        
         if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ message: 'Email já está em uso.' });
+            // Lança um erro com uma propriedade 'status' para ser capturado no controller
+            const duplicateError: any = new Error('Email já está em uso.');
+            duplicateError.status = 409;
+            throw duplicateError;
         }
-        res.status(500).json({ message: 'Erro interno do servidor.' });
+        // Lança erro 500 para qualquer outro erro
+        const serverError: any = new Error('Erro interno do servidor.');
+        serverError.status = 500;
+        throw serverError;
     }
 };
