@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { RowDataPacket } from 'mysql2/promise';
-import pool from '../http/database';
+import pool from '../../http/database';
 import jwt from 'jsonwebtoken';
 
 interface User extends RowDataPacket {

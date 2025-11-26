@@ -49,44 +49,44 @@ app.use(express.static(path.resolve("public")));
 // =======================================================================================
 
 // Rota para CRIAR NOVO ARTIGO com user_id
-app.post('/articles', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-    try {
+// app.post('/articles', async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+//     try {
         
-        const { title, description, imageBlob, imageMimeType, author, content, userId } = req.body;
+//         const { title, description, imageBlob, imageMimeType, author, content, userId } = req.body;
 
-        // Validação de campos obrigatórios
-        if (!title || !description || !author || !content || !userId) {
-            return res.status(400).json({ message: 'Título, descrição, autor, conteúdo e ID do usuário são obrigatórios.' });
-        }
+//         // Validação de campos obrigatórios
+//         if (!title || !description || !author || !content || !userId) {
+//             return res.status(400).json({ message: 'Título, descrição, autor, conteúdo e ID do usuário são obrigatórios.' });
+//         }
 
-        let imageData = null; 
-        if (imageBlob && imageMimeType) {
+//         let imageData = null; 
+//         if (imageBlob && imageMimeType) {
             
-            const base64Data = imageBlob.split(',')[1];
-            if (base64Data) {
-                imageData = Buffer.from(base64Data, 'base64');
-            }
-        }
+//             const base64Data = imageBlob.split(',')[1];
+//             if (base64Data) {
+//                 imageData = Buffer.from(base64Data, 'base64');
+//             }
+//         }
 
         
-        const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO articles (title, description, image_blob, image_mime_type, date, author, user_id, content) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)',
-            [title, description, imageData, imageMimeType, author, userId, content]
-        );
+//         const [result] = await pool.execute<ResultSetHeader>(
+//             'INSERT INTO articles (title, description, image_blob, image_mime_type, date, author, user_id, content) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?)',
+//             [title, description, imageData, imageMimeType, author, userId, content]
+//         );
 
-        const insertId = result.insertId; // ID do artigo recém-criado
+//         const insertId = result.insertId; // ID do artigo recém-criado
 
-        res.status(201).json({
-            message: 'Artigo criado com sucesso!',
-            articleId: insertId,
-            data: { title, description, author, imageMimeType, content, user_id: userId }
-        });
+//         res.status(201).json({
+//             message: 'Artigo criado com sucesso!',
+//             articleId: insertId,
+//             data: { title, description, author, imageMimeType, content, user_id: userId }
+//         });
 
-    } catch (error: any) {
-        console.error('Erro ao criar artigo:', error);
-        res.status(500).json({ message: 'Erro interno do servidor ao criar artigo.', error: error.message });
-    }
-});
+//     } catch (error: any) {
+//         console.error('Erro ao criar artigo:', error);
+//         res.status(500).json({ message: 'Erro interno do servidor ao criar artigo.', error: error.message });
+//     }
+// });
 
 
 app.get('/articles/user/:userId', async (req: Request, res: Response) => {

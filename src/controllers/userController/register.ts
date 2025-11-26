@@ -1,6 +1,6 @@
 // controllers/auth.controller.ts
 import { RequestHandler } from 'express';
-import { register } from '../../auth/register.service';
+import { register } from '../../service/auth/register.service';
 
 
 interface RegisterBody {

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { ResultSetHeader } from 'mysql2/promise';
-import pool from '../http/database';
+import pool from '../../http/database';
 
 
 export const register = async (email: string, password: string) => { 
